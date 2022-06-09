@@ -1,0 +1,4 @@
+environment_family_name: 'non-prod'
+stack_name_prefix: '{{ environment_family_name | title }}'
+stack_state: 'present'
+region: 'ap-southeast-2'

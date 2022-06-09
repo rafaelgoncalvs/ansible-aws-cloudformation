@@ -1,0 +1,50 @@
+containers:
+  ansible-env:
+    build_directory: .batect/ansible
+    volumes:
+      - local: .
+        container: /code
+      - local: Users/$USER/.aws
+        container: /code/.aws
+    working_directory: /code
+
+  docker-env:
+    image: docker
+    volumes:
+      - local: roles/cfn-custom-resources/files/lambda
+        container: /code
+        options: cached
+      - local: /var/run/docker.sock
+        container: /var/run/docker.sock
+    working_directory: /code
+
+tasks:
+  ansible-shell:
+    description: Open ansible shell
+    run:
+      container: ansible-env
+      command: sh
+
+  build-image:
+    description: Build create database lambda image
+    run:
+      container: docker-env
+      command: docker build --build-arg MAIN_PYTHON_FILE="create_database.py" -t 622956603603.dkr.ecr.ap-southeast-2.amazonaws.com/create-database-lambda:latest .
+
+  push-image:
+    description: Push create database lambda image
+    run:
+      container: docker-env
+      command: docker push 622956603603.dkr.ecr.ap-southeast-2.amazonaws.com/create-database-lambda:latest
+
+  login-aws-ecr:
+    description: Build create database lambda image
+    run:
+      container: docker-env
+      command: aws ecr get-login-password | docker login --username AWS --password-stdin 079466124133.dkr.ecr.ap-southeast-2.amazonaws.com
+
+  cfn-custom-resources:
+    description: Run CFN custom resources
+    run:
+      container: ansible-env
+      command: ansible-playbook -v -i inventories/non_prod/hosts  --tags "cfn-custom-resources" playbook.yml --extra-vars="version=latest"

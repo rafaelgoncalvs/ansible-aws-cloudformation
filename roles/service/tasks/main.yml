@@ -1,0 +1,19 @@
+- name: Process Base Template
+  tags:
+    - service
+  template:
+    src: '{{ role_path }}/files/service.jinja2.cfn.yml'
+    dest: '{{ role_path }}/files/service.generated.cfn.yml'
+- name: Service
+  tags:
+    - service
+  cloudformation:
+    region: '{{ region }}'
+    disable_rollback: true
+    template: '{{ role_path }}/files/fargate-service.generated.cfn.yml'
+    template_parameters:
+      CfnLambdasStackName: '{{ stack_name_prefix }}-CFN-Lambdas'
+      Environment: '{{ environment_name }}'
+      ServiceName: '{{ service_name }}'
+    tags:
+      Stack: '{{ stack_name_prefix }}-{{ environment_name | title}}-{{service_name | title}}'

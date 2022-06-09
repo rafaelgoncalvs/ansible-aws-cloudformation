@@ -1,0 +1,35 @@
+Description: |
+  Custom Cloudformation resource lambdas
+
+Parameters:
+  CreateDatabaseContainerImageUri:
+    Type: String
+
+Resources:
+  #=====================================================================================
+  # Create Database
+  #=====================================================================================
+  CreateDatabaseLambda:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      PackageType: Image
+      Code:
+        ImageUri: !Ref CreateDatabaseContainerImageUri
+      Architectures:
+        - x86_64
+      FunctionName: !Sub "${AWS::StackName}-CreateDatabaseLambda"
+      Timeout: 900
+      MemorySize: 2048
+
+Outputs:
+  CreateDatabaseLambda:
+    Description: Lambda generates credentials
+    Value: !GetAtt CreateDatabaseLambda.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}:CreateDatabaseLambda'
+
+  CreateDatabaseRole:
+    Description: Lambda creates a database
+    Value: !GetAtt CreateDatabaseRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}:CreateDatabaseRole'

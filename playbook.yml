@@ -1,0 +1,9 @@
+- name: App Infra
+  hosts: aws
+  gather_facts: false
+  tasks:
+    - include_role:
+        name: cfn-custom-resources
+      tags:
+        - cfn-custom-resources-source
+        - cfn-custom-resources

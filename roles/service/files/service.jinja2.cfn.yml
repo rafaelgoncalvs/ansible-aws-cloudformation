@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: {{ environment_name }} {{ service_name }} Fargate Service
+
+Parameters:
+  ALBStackName:
+    Type: String
+
+  CfnLambdasStackName:
+    Type: String
+
+  ClusterStackName:
+    Type: String
+
+  ContainerCpu:
+    Type: Number
+
+  ContainerLogRetentionInDays:
+    Type: Number
+
+  ContainerMemory:
+    Type: Number
+
+  ContainerPort:
+    Type: Number
+    Default: 80
+
+  DesiredCount:
+    Type: Number
+
+  DomainName:
+    Type: String
+
+  Environment:
+    Type: String
+
+  EnvironmentFamily:
+    Type: String
+
+  HealthCheckEndpoint:
+    Type: String
+    Description: The loadbalancer health check
+
+  ImageUrl:
+    Type: String
+
+  NetworkStackName:
+    Type: String
+
+  RDSStackName:
+    Type: String
+
+  ServiceHost:
+    Type: String
+    Description: In most cases this will be the same as service name, use this to override what the host part in the url will be.
+
+  ServiceName:
+    Type: String
+
+  RestoreTemplateDB:
+    Type: String
+    Description: Set to "true" to restore a template database into the newly created service db
+
+  TemplateDBBucket:
+    Type: String
+    Description: Used when RestoreTemplateDB is True, this specifies the bucket that contains the template DB dump
+
+  TemplateDBBucketKey:
+    Type: String
+    Description: Used when RestoreTemplateDB is True, this is the key in the TemplateDBBucket that contains the template db dump
+
+  BackupDBBucket:
+    Type: String
+    Description: Bucket to create db backups in
+
+  CreateDNSRecord:
+    Type: String
+    Description: Set to "true" to create Route53 DNS records, this will only be used in non-prod
+
+  LogForwardingLambdaArn:
+    Type: String
+
+  CognitoStackName:
+    Type: String
+
+  CreateS3Bucket:
+    Type: String
+    Description: Set to "true" to create an S3 bucket with permissions for service to write to it.
+
+  S3BucketName:
+    Type: String
+
+  PeriodicallyRefreshDatabase:
+    Type: String
+    Default: "false"
+
+  PeriodicallyRefreshDatabaseSchedule:
+    Type: String
+    Default: ""
+
+  PeriodicallyRefreshDatabaseIgnoredSchemas:
+    Type: String
+    Default: ""
+
+  PeriodicallySeedAppUsersSchedule:
+    Type: String
+    Default: ""
+
+  AppUsers:
+    Type: String
+    Default: ""
+
+  PeriodicallyRestartEcsServiceSchedule:
+    Type: String
+    Default: ""
+
+  ImageBucketName:
+    Type: String
+    Default: ""
+
+  DataExportBucketName:
+    Type: String
+    Default: ""
+
+  Region:
+    Type: String
+    Default: ""
+
+Resources:
+  CreateServiceDatabase:
+    Type: "Custom::CreateDatabaseLambdaContainerImage"
+    Properties:
+      Arguments:
+        DatabaseHost: !ImportValue
+        DatabasePort: !ImportValue
+        DatabaseName: !Sub ${Environment}_${ServiceName}
+        Username: !Sub ${Environment}_${ServiceName}_user
+      ServiceToken: !ImportValue
+        "Fn::Sub": "${CfnLambdasStackName}:CreateDatabaseLambda"
+      StackName: !Sub "${AWS::StackName}"
+
+Outputs:
+  TaskExecutionRole:
+    Value: !Ref TaskExecutionRole
+    Export:
+      Name: !Sub "${AWS::StackName}-TaskExecutionRole"

@@ -1,0 +1,10 @@
+.ansible
+.aws
+.idea
+.bash_history
+*.generated.cfn.yml
+__pycache__
+**/node_modules
+**/.zip
+**/dist
+**/coverage

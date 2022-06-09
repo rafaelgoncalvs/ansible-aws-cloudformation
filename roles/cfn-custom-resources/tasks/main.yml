@@ -1,0 +1,14 @@
+- name: Create CFN Lambdas
+  tags:
+    - cfn-custom-resources-stack
+    - cfn-custom-resources
+  amazon.aws.cloudformation:
+    stack_name: '{{ stack_name_prefix }}-CFN-Lambdas'
+    state: '{{stack_state}}'
+    region: '{{ region }}'
+    disable_rollback: true
+    template: '{{ role_path }}/files/lambdas.cfn.yml'
+    template_parameters:
+      CreateDatabaseContainerImageUri: '622956603603.dkr.ecr.ap-southeast-2.amazonaws.com/create-database-lambda:latest'
+    tags:
+      Stack: '{{ stack_name_prefix }}-CFN-Lambdas'
